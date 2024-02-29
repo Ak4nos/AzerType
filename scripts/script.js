@@ -1,69 +1,127 @@
- // Fonction qui ffiche le score
-function afficherResultat (score, nombreMotsProposes) {
-    //console.log('Votre score est de ' + score + ' sur ' + nombreMotsProposes)
-    let scoreAfficheSpan = document.querySelector(".zoneScore span")
+/*********************************************************************************
+ * 
+ * Ce fichier contient toutes les fonctions nécessaires au fonctionnement du jeu. 
+ * 
+ *********************************************************************************/
 
-    let afficheScore = `${score} / ${nombreMotsProposes}`
-    scoreAfficheSpan.innerText = afficheScore
-
+/**
+ * Cette fonction affiche dans la console le score de l'utilisateur
+ * @param {number} score : le score de l'utilisateur
+ * @param {number} nbMotsProposes : le nombre de mots proposés à l'utilisateur
+ */
+function afficherResultat(score, nbMotsProposes) {
+    // Récupération de la zone dans laquelle on va écrire le score
+    let spanScore = document.querySelector(".zoneScore span")
+    // Ecriture du texte
+    let affichageScore = `${score} / ${nbMotsProposes}`
+    // On place le texte à l'intérieur du span. 
+    spanScore.innerText = affichageScore
 }
 
- // Fonction qui redemande à l'uttilisateur de choisir tant que "mots" ou "phrases" n'est pas tapé 
-/* function choisirPhrasesOuMots () {
-    let choixUtilisateur = prompt("Tapez 'mots' pour choisir les mots ou 'phrases' pour les phrases :")
-    while (choixUtilisateur !== "mots" && choixUtilisateur !== "phrases") {
-        choixUtilisateur = prompt("Tapez 'mots' pour choisir les mots ou 'phrases' pour les phrases :")
-    }
-    return choixUtilisateur
-} */
+/**
+ * Cette fonction affiche une proposition, que le joueur devra recopier, 
+ * dans la zone "zoneProposition"
+ * @param {string} proposition : la proposition à afficher
+ */
+function afficherProposition(proposition) {
+    let zoneProposition = document.querySelector(".zoneProposition")
+    zoneProposition.innerText = proposition
+}
 
+/**
+ * Cette fonction construit et affiche l'email. 
+ * @param {string} nom : le nom du joueur
+ * @param {string} email : l'email de la personne avec qui il veut partager son score
+ * @param {string} score : le score. 
+ */
+function afficherEmail(nom, email, score) {
+    let mailto = `mailto:${email}?subject=Partage du score Azertype&body=Salut, je suis ${nom} et je viens de réaliser le score ${score} sur le site d'Azertype !`
+    location.href = mailto
+}
 
-/* function lancerBoucleDeJeu (listeProposition){
+/**
+ * Cette fonction lance le jeu. 
+ * Elle demande à l'utilisateur de choisir entre "mots" et "phrases" et lance la boucle de jeu correspondante
+ */
+function lancerJeu() {
+    // Initialisations
+    initAddEventListenerPopup()
     let score = 0
-    for (let i = 0; i < listeProposition.length; i++) {
-        let motUtilisateur = prompt("Rentrez le mot : " + listeProposition[i])
-
-        if (motUtilisateur === listeProposition[i]) {
-            score++
-        }
-    }
-    return score
-} */
-
-function lancerLeJeu () {
-    //let choix = choisirPhrasesOuMots()
-    let score = 0
-
-    let boutonValidationEcriture = document.getElementById("btnValiderMot")
-    let zoneInputEcriture = document.getElementById("inputEcriture")
     let i = 0
-    afficherProposition(listeMots[i])
+    let listeProposition = listeMots
 
-    boutonValidationEcriture.addEventListener('click', () =>{
-        console.log(zoneInputEcriture.value)
-        if (zoneInputEcriture.value === listeMots[i]){
+    let btnValiderMot = document.getElementById("btnValiderMot")
+    let inputEcriture = document.getElementById("inputEcriture")
+
+    afficherProposition(listeProposition[i])
+
+    // Gestion de l'événement click sur le bouton "valider"
+    btnValiderMot.addEventListener("click", () => {
+        if (inputEcriture.value === listeProposition[i]) {
             score++
         }
         i++
         afficherResultat(score, i)
-        zoneInputEcriture.value = ''
-        if (listeMots[i] === undefined) {
-            afficherProposition("Le jeu est terminé")
-            boutonValidationEcriture.disabled = true
-
-        } else
-
-        afficherProposition(listeMots[i])
+        inputEcriture.value = ''
+        if (listeProposition[i] === undefined) {
+            afficherProposition("Le jeu est fini")
+            btnValiderMot.disabled = true
+        } else {
+            afficherProposition(listeProposition[i])
+        }
     })
-    
+
+    // Gestion de l'événement change sur les boutons radios. 
+    let listeBtnRadio = document.querySelectorAll(".optionSource input")
+    for (let index = 0; index < listeBtnRadio.length; index++) {
+        listeBtnRadio[index].addEventListener("change", (event) => {
+            // Si c'est le premier élément qui a été modifié, alors nous voulons
+            // jouer avec la listeMots. 
+            if (event.target.value === "1") {
+                listeProposition = listeMots
+            } else {
+                // Sinon nous voulons jouer avec la liste des phrases
+                listeProposition = listePhrases
+            }
+            // Et on modifie l'affichage en direct. 
+            afficherProposition(listeProposition[i])
+        })
+    }
+
+    // gestion du submit formulaire partage
+    let form = document.querySelector('form')
+
+    form.addEventListener('submit', (event) => {
+        event.preventDefault()
+        let baliseNom = document.getElementById('nom')
+        let nom = baliseNom.value        
+
+        let baliseEmail = document.getElementById('email')
+        let email = baliseEmail.value
+
+        if (validerNom(nom) && validerMail(email)) {
+            let scoreEmail = `${score} / ${i}`
+
+            afficherEmail(nom, email, scoreEmail)
+        } else {
+            console.log("Erreur")
+        }
+
+    })
     afficherResultat(score, i)
 }
 
-function afficherProposition (proposition){
-    let motsAffiches = document.querySelector(".zoneProposition")
-    motsAffiches.innerText = proposition
-
+function validerNom(nom) {
+    if (nom.length >= 2) {
+        return true
+    }
+    return false
 }
 
-
-
+function validerMail(email) {
+    let regexEmail = new RegExp("^[a-z0-9._-]+@[a-z0-9._-]+\\.[a-z0-9._-]+")
+    if (regexEmail.test(email)) {
+        return true
+    }
+    return false
+}
