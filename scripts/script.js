@@ -87,41 +87,69 @@ function lancerJeu() {
             afficherProposition(listeProposition[i])
         })
     }
-
-    // gestion du submit formulaire partage
     let form = document.querySelector('form')
-
     form.addEventListener('submit', (event) => {
         event.preventDefault()
-        let baliseNom = document.getElementById('nom')
-        let nom = baliseNom.value        
-
-        let baliseEmail = document.getElementById('email')
-        let email = baliseEmail.value
-
-        if (validerNom(nom) && validerMail(email)) {
-            let scoreEmail = `${score} / ${i}`
-
-            afficherEmail(nom, email, scoreEmail)
-        } else {
-            console.log("Erreur")
-        }
+        let scoreEmail = `${score} / ${i}`
+        gererFormulaire(scoreEmail)    
 
     })
+
     afficherResultat(score, i)
 }
 
+/** Cete fonction permet de véifier si le nom est trop court
+    @param {string} nom
+    @throws {Error}
+*/
 function validerNom(nom) {
-    if (nom.length >= 2) {
-        return true
+    if (nom.length < 2) {
+        throw new Error("Le nom est trop court")
     }
-    return false
 }
-
+/** Cete fonction permet de véifier si l'email est valide
+    @param {string} email
+    @throws {Error}
+*/
 function validerMail(email) {
     let regexEmail = new RegExp("^[a-z0-9._-]+@[a-z0-9._-]+\\.[a-z0-9._-]+")
-    if (regexEmail.test(email)) {
-        return true
+    if (!regexEmail.test(email)) {
+        throw new Error("L'email n'a pas le bon format")
     }
-    return false
+}
+
+function gererFormulaire (scoreEmail){
+// gestion du submit formulaire partage
+
+    try { 
+        let baliseNom = document.getElementById('nom')
+        let nom = baliseNom.value
+        validerNom(nom)        
+    
+        let baliseEmail = document.getElementById('email')
+        let email = baliseEmail.value
+        validerMail(email)
+        afficherMessageErreur("")
+        afficherEmail(nom, email, scoreEmail)
+
+    } catch (erreur) {
+        console.log("Erreur")
+        afficherMessageErreur(erreur.message)
+    }
+   
+
+}
+
+function afficherMessageErreur (message) {
+    let baliseMessageErreur = document.getElementById("erreurMessage")
+
+    if(!baliseMessageErreur) {
+        let balisePopup = document.querySelector(".popup")
+        baliseMessageErreur = document.createElement("span")
+        baliseMessageErreur.id = "erreurMessage"
+
+        balisePopup.append(baliseMessageErreur)
+    }
+    baliseMessageErreur.innerText = message
+
 }
